@@ -36,8 +36,8 @@ public class ContactCount {
     
 }
 
-/*
-
+/* Developer console code
+ 
 List<Contact> myRecords = [SELECT AccountId FROM Contact WHERE AccountId != null];
 
 Set<Id> myAccountIds = new Set<Id>();
