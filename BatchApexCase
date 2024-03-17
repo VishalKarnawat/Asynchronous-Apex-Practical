@@ -1,0 +1,35 @@
+/*
+Create a batch apex that updates all Cases where Priority is blank to Low. Ensure proper
+code coverage as well.
+*/
+
+global class BatchApexCase implements Database.Batchable<sObject> {
+
+    global Database.QueryLocator start(Database.BatchableContext BC){
+        return Database.getQueryLocator([
+            Select Id, Priority From Case where Priority = ''
+        ]);
+    }
+    
+    global void execute(Database.BatchableContext BC, List<Case> scope){
+        List<Case> caseToUpdate = new List<Case>();
+        
+        for(Case c: scope){
+            c.Priority = 'Low';
+            caseToUpdate.add(c);
+        }
+        update caseToUpdate;
+    }
+    
+    global void finish(Database.BatchableContext BC){
+        System.debug('Finsh');
+    }
+    
+}
+
+/* Develope console code
+
+BatchApexCase batchPriority = new BatchApexCase();
+Database.executeBatch(batchPriority, 50);
+
+*/
