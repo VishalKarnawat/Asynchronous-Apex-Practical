@@ -1,0 +1,34 @@
+/*
+Populate Parent Account on accounts where Billing State = ‘NY’ using Queueable Apex.
+Ensure proper code coverage as well.
+*/
+
+public class QueueableApexAccount implements Queueable {
+
+    private List<Account> accList;
+    private Id paraentAccId;
+    
+    public QueueableApexAccount(List<Account> accRecords, Id id){
+        this.accList = accRecords;
+        this.paraentAccId = id;
+    }
+    
+    public void execute(QueueableContext context){
+        
+        for(Account acc: accList)
+        {
+            acc.ParentId = paraentAccId;
+        }
+        update accList;
+    }
+    
+}
+
+/* Developer Console Code
+
+List<Account> accList = new List<Account>([Select Id From Account Where billingstate = 'NY']);
+Id ParentId = [Select Id From Account Where Name = 'Burlington Textiles Corp of America'][0].Id;
+
+QueueableApexAccount updateJobs = new QueueableApexAccount(accList, ParentId);
+Id jobId = System.enqueueJob(updateJobs);
+*/
