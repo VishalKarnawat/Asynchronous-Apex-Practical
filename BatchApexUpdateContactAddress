@@ -1,0 +1,50 @@
+/*
+Write a batch apex to populate Account’s Billing Address on related Contact’s Mailing
+address. Ensure Proper code coverage as well. [Note: In test class of batch apex you
+cannot pass batch size because it runs for one batch only.]
+*/
+
+global class BatchApexUpdateContactAddress implements Database.Batchable<sObject>{
+    
+    global Database.QueryLocator start(Database.BatchableContext BC){
+        return Database.getQueryLocator([SELECT Id, Name, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry,
+                                         (SELECT Id, FirstName, LastName, MailingStreet, MailingCity, MailingState, MailingPostalCode, MailingCountry
+                                          FROM Contacts)
+                                         FROM Account
+                                         WHERE BillingStreet != null]);
+    } 
+    
+    global void execute(Database.BatchableContext BC, List<Account> scope){
+        List<Contact> contactsToUpdate = new List<Contact>();
+        
+        for (Account acc : scope) {
+            for (Contact con : acc.Contacts) {
+                con.MailingStreet = acc.BillingStreet;
+                con.MailingCity = acc.BillingCity;
+                con.MailingState = acc.BillingState;
+                con.MailingPostalCode = acc.BillingPostalCode;
+                con.MailingCountry = acc.BillingCountry;
+                contactsToUpdate.add(con);
+            }
+        }
+        
+        update contactsToUpdate;
+    }
+    
+    
+    global void finish(Database.BatchableContext BC){
+        System.debug('test');	
+    }
+    
+}
+
+
+/* Developer console code
+
+BatchApexUpdateContactAddress batchList = new BatchApexUpdateContactAddress();
+
+// calling with a batch size 50
+Database.executeBatch(batchList, 50);
+
+
+*/
