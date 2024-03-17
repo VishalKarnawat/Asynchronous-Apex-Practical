@@ -35,3 +35,16 @@ public class ContactCount {
     }
     
 }
+
+/*
+
+List<Contact> myRecords = [SELECT AccountId FROM Contact WHERE AccountId != null];
+
+Set<Id> myAccountIds = new Set<Id>();
+for (Contact con : myRecords) {
+    myAccountIds.add(con.AccountId);
+}
+
+futureMethod1.countContacts(myAccountIds);
+
+*/
