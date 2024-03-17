@@ -1,0 +1,37 @@
+//Create a future method to count the number of contacts associated with an account.
+//List of Account Ids will be passed to the future method and update Contact_count__c field with contact count.
+
+public class ContactCount {
+    
+    @future
+    public static void countContacts(Set<Id> accountIds) {
+        if (accountIds.isEmpty()) {
+            return;
+        }
+        
+        List<Account> accountsToUpdate = new List<Account>();
+        
+        // Aggregate contact counts for each account
+        Map<Id, Integer> accountIdToContactCount = new Map<Id, Integer>();
+        for (AggregateResult aggregate : [SELECT AccountId, COUNT(Id) contactCount FROM Contact WHERE AccountId IN :accountIds GROUP BY AccountId ]) {
+            Id accountId = (Id)aggregate.get('AccountId');
+            Integer contactCount = (Integer)aggregate.get('contactCount');
+            accountIdToContactCount.put(accountId, contactCount);
+        }
+        
+        // Update Account records with contact counts
+        for (Id accountId : accountIds) {
+            Integer contactCount = accountIdToContactCount.containsKey(accountId) ? accountIdToContactCount.get(accountId) : 0;
+            accountsToUpdate.add(new Account(Id = accountId, Contact_Count__c = contactCount));
+        }
+        
+        // Perform DML operation in a try-catch block
+        try {
+            update accountsToUpdate;
+        } catch (DmlException e) {
+            System.debug('Error occurred while updating accounts: ' + e.getMessage());
+            // Handle the exception as per your application's requirements
+        }
+    }
+    
+}
