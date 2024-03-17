@@ -1,0 +1,32 @@
+@isTest
+public class QueueableApexAccountTest {
+    @testSetup
+    static void setup(){
+        List<Account> accList = new List<Account>();
+        
+        accList.add(new Account(Name = 'Parent'));
+        
+        for(Integer i=0; i<100; i++){
+            accList.add(new Account(name='Test Account'+i));
+        }
+        insert accList;
+    }
+    
+    @isTest
+    private static void testQueue()
+    {
+        Id parentId = [SELECT Id FROM Account WHERE Name='Parent' LIMIT 1].Id;
+        
+        List<Account> accList = [Select Id, Name From Account Where name Like 'Test Account%'];
+        
+        QueueableApexAccount updateJob = new QueueableApexAccount(accList, parentId);
+        
+        Test.startTest();
+        System.enqueueJob(updateJob);
+        Test.stopTest();
+        
+        // Assertion should be placed outside of Test.startTest() and Test.stopTest() block
+        Integer count = [Select count() FROM Account Where parentId =: parentId];
+        System.assertEquals(100, count);
+    }
+}
