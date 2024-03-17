@@ -1,0 +1,28 @@
+
+@isTest
+private class BatchApexUpdateContactAddressTest {
+    @isTest
+    static void testBatch() {
+        // Create test data
+        Account acc = new Account(Name = 'Test Account', BillingStreet = '123 Main St', BillingCity = 'Test City',
+                                  BillingState = 'Test State', BillingPostalCode = '12345', BillingCountry = 'Test Country');
+        insert acc;
+        
+        Contact con = new Contact(FirstName = 'Test', LastName = 'Contact', AccountId = acc.Id);
+        insert con;
+
+        // Start the batch job
+        Test.startTest();
+        BatchApexUpdateContactAddress batchJob = new BatchApexUpdateContactAddress();
+        Database.executeBatch(batchJob);
+        Test.stopTest();
+
+        // Verify that the Contact's Mailing Address is updated
+        Contact updatedContact = [SELECT Id, MailingStreet, MailingCity, MailingState, MailingPostalCode, MailingCountry FROM Contact WHERE Id = :con.Id];
+        System.assertEquals(acc.BillingStreet, updatedContact.MailingStreet);
+        System.assertEquals(acc.BillingCity, updatedContact.MailingCity);
+        System.assertEquals(acc.BillingState, updatedContact.MailingState);
+        System.assertEquals(acc.BillingPostalCode, updatedContact.MailingPostalCode);
+        System.assertEquals(acc.BillingCountry, updatedContact.MailingCountry);
+    }
+}
