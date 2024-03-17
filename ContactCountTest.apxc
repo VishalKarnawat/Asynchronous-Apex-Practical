@@ -1,0 +1,41 @@
+@isTest
+public class futureMethod1Test {
+    @isTest
+    static void testCountContacts() {
+        // Create test accounts
+        List<Account> testAccounts = new List<Account>{
+            new Account(Name = 'Test Account 1'),
+            new Account(Name = 'Test Account 2'),
+            new Account(Name = 'xyz')
+        };
+        insert testAccounts;
+        
+        // Create test contacts associated with test accounts
+        List<Contact> testContacts = new List<Contact>{
+            new Contact(AccountId = testAccounts[0].Id, LastName = 'Contact 1'),
+            new Contact(AccountId = testAccounts[0].Id, LastName = 'Contact 2'),
+            new Contact(AccountId = testAccounts[1].Id, LastName = 'Contact 3')
+        };
+        insert testContacts;
+        
+        // Add account IDs to a set
+        Set<Id> accountIds = new Set<Id>();
+        for (Account acc : testAccounts) {
+            accountIds.add(acc.Id);
+        }
+        
+        if (!accountIds.isEmpty()) {
+            Test.startTest(); // Start synchronous execution context
+            ContactCount.countContacts(accountIds);
+            Test.stopTest(); // Stop synchronous execution context
+        }
+        
+        
+        // Verify that the contact count is updated on the accounts
+        List<Account> updatedAccounts = [SELECT Contact_Count__c FROM Account WHERE Id IN :testAccounts];
+        System.assertEquals(2, updatedAccounts[0].Contact_Count__c);
+        System.assertEquals(1, updatedAccounts[1].Contact_Count__c);
+        System.debug('count is :'+updatedAccounts[0].Contact_Count__c);
+        System.debug('count is :'+updatedAccounts[1].Contact_Count__c);
+    }
+}
