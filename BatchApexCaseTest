@@ -1,0 +1,23 @@
+@istest
+public class BatchApexCaseTest {
+	@istest
+    public static void batchTest(){
+        
+        List<Case> testCases = new List<Case>();
+        for (Integer i = 0; i < 200; i++) {
+            Case testCase = new Case(Priority = '',Origin = '');
+            testCases.add(testCase);
+        }
+        insert testCases;
+        
+        // Start the batch
+        Test.startTest();
+        BatchApexCase batch = new BatchApexCase();
+        Database.executeBatch(batch);
+        Test.stopTest();
+        
+        // Verify that priorities are updated to 'Low'
+        List<Case> updatedCases = [SELECT Id, Priority FROM Case WHERE Priority = 'Low'];
+        System.assertEquals(200, updatedCases.size(), 'All cases should have been updated to Low priority');
+    }
+}
